@@ -1,0 +1,119 @@
+__author__ = 'Iconos'
+import os;
+path = os.getcwd()
+pdfNameList = []
+mp3NameList = []
+filenameList = []
+LessonVar = 6
+
+
+def PDFTags(string):
+    startString1 = "<object data="+'"'
+    endString1 =  '"'+"type="+'"'+"application/pdf"+'"'+" width="+'"'+"100%"+'"'+" height="+'"'+"100%"+'"'+">"
+    startString2 = "Browser cannot handle pdf files: <a href="+'"'
+    endString2 = '"'+">Click_here_to_open_the_pdf.htm</a></object>"
+    string = startString1+string+endString1+"\n"+startString2+string+endString2+"\n"
+    return(string)
+
+def BuildPages():
+
+    count = 0
+    for item in pdfNameList:
+        newFile = open(str(filenameList[count])+".htm","w")
+        ##check if mp3 exists
+        if (mp3NameList.count(pdfNameList[count])>0):
+            print "Processing page:"+str(pdfNameList[count])
+            mp3NameList.sort()
+            mp3NameList.reverse()
+            mp3Pop = mp3NameList.pop()
+            print "Inserting " + str(mp3Pop) + ".mp3"
+            line = mp3PageBuild(pdfNameList[count],mp3Pop,count)
+            newFile.write(line)
+            newFile.close
+            count+=1
+        else :
+            print "No audio for page:" + str(pdfNameList[count])+". Processing..."
+            line = quietPageBuild(pdfNameList[count],count)
+            newFile.write(line)
+            newFile.close
+            count+=1
+        ##else perform no mp3 page build
+        
+def mp3PageBuild(pageNum,mp3Item,itemNum):
+       line = ("<html>\n<head>\n<title>Japanese For Beginners, Level 2</title>"
+               "\n</head>\n\n<body>\n\n<table width=\"100%\">\n<tr><td width=\"10%\"> "
+               "&nbsp; </td>\n    <td><big><b><font color = #990000>Lesson "+str(LessonVar)+
+               ": page "+str(pageNum)+"</font></b></big></td></tr>\n<tr><td width=\"10%\"> &nbsp; </td>\n"
+               )
+       ##insert previous page and index line
+       line = line+"    <td> <a href=\""+str(pdfNameList[itemNum-1])+".htm\">previous page</a> &nbsp; &nbsp; <a href=\"../Textbook.htm\">index</a> </td>\n"
+
+       ##insert mp3 line
+       line = line + "<td><audio controls autoplay> <source src=\""+str(mp3Item)+".mp3\"type=\"audio/mpeg\"></audio></td>\n"
+       ##insert next page line
+       if len(pdfNameList)>(itemNum+1):
+          line = line + "    <td> <a href=\""+str(pdfNameList[itemNum+1])+".htm\">next page</a> </td></tr>\n</table>\n"
+       else:
+          line = line + "</tr>\n</table>\n"
+       ##insert pdf line
+       line = line + PDFTags(pageNum+".pdf")
+       ##insert bottom prev page line
+       line = line + "<table width=\"100%\">\n<tr>\n  <td width=\"10%\"> &nbsp; </td>\n"
+       line = line+"<td> <a href=\""+str(pdfNameList[itemNum-1])+".htm\">previous page</a> &nbsp; &nbsp; <a href=\"../Textbook.htm\">index</a> </td>\n"
+       ##insert bottom next page line and closing
+       if len(pdfNameList)>(itemNum+1):
+          line = line + "  <td> <a href=\""+str(pdfNameList[itemNum+1])+".htm\">next page</a>   </td>\n</table>\n\n</body>\n</html>"
+       else:
+          line = line + "\n</table>\n\n</body>\n</html>"
+       return line
+       
+def quietPageBuild(pageNum,itemNum):
+       line = ("<html>\n<head>\n<title>Japanese For Beginners, Level 2</title>"
+               "\n</head>\n\n<body>\n\n<table width=\"100%\">\n<tr><td width=\"10%\"> "
+               "&nbsp; </td>\n    <td><big><b><font color = #990000>Lesson "+str(LessonVar)+
+               ": page "+str(pageNum)+"</font></b></big></td></tr>\n<tr><td width=\"10%\"> &nbsp; </td>\n"
+               )
+       ##insert previous page and index line
+       line = line+"    <td> <a href=\""+str(pdfNameList[itemNum-1])+".htm\">previous page</a> &nbsp; &nbsp; <a href=\"../Textbook.htm\">index</a> </td>\n"
+
+       ##insert next page line
+       if len(pdfNameList)>(itemNum+1):
+          line = line + "    <td> <a href=\""+str(pdfNameList[itemNum+1])+".htm\">next page</a> </td></tr>\n</table>\n"
+       else:
+          line = line + "</tr>\n</table>\n"
+       ##insert pdf line
+       line = line + PDFTags(pageNum+".pdf")
+       ##insert bottom prev page line
+       line = line + "<table width=\"100%\">\n<tr>\n  <td width=\"10%\"> &nbsp; </td>\n"
+       line = line+"<td> <a href=\""+str(pdfNameList[itemNum-1])+".htm\">previous page</a> &nbsp; &nbsp; <a href=\"../Textbook.htm\">index</a> </td>\n"
+       ##insert bottom next page line and closing
+       if len(pdfNameList)>(itemNum+1):
+          line = line + "  <td> <a href=\""+str(pdfNameList[itemNum+1])+".htm\">next page</a>   </td>\n</table>\n\n</body>\n</html>"
+       else:
+          line = line + "\n</table>\n\n</body>\n</html>"
+       return line
+       
+for dirpath, dirnames, filenames in os.walk(path):
+    print path
+    mp3Count = 0
+    pdfCount = 0
+    for filename in filenames:
+        if filename.endswith('.mp3'):
+            (title) = filename.split(".")
+            mp3NameList.append(title[0])
+            mp3Count = mp3Count+1
+        ## add to mp3 name list
+        if filename.endswith('.pdf'):
+            (title) = filename.split(".")
+            pdfNameList.append(title[0])
+            pdfCount = pdfCount +1
+        ## add to pdf word list
+    for item in pdfNameList:
+        filenameList.append(item)
+    print "found " +str(mp3Count) + " mp3 files"
+    print "found " +str(pdfCount) + " pdf files"
+    mp3NameList.sort()
+    pdfNameList.sort()
+    filenameList.sort()
+    BuildPages()
+    print "Creation Complete"
